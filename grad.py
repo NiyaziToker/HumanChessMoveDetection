@@ -13,8 +13,8 @@ import serial
 ser = serial.Serial('/dev/ttyUSB0')
 w=480
 h=480
-harf = ['h','g','f','e','d','c','b','a']
-numara = [1, 2, 3, 4, 5, 6, 7, 8]
+harf = ['a','b','c','d','e','f','g','h']
+numara = [8, 7, 6, 5, 4, 3, 2, 1]
 
 ###############################################################################
 # Piece-Square tables. Tune these to change sunfish's behaviour
@@ -479,41 +479,58 @@ def order_points(pts):
         # return the ordered coordinates
         return rect
 #---------------------------------------------------------------------------------------------------duzlestir
-def duzlestir(img):
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray,(5,5),0)
-    thresh = cv2.adaptiveThreshold(gray,255,1,1,11,2)
-
-    im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    biggest = None
-    max_area = 0
-    for i in contours:
-            area = cv2.contourArea(i)
-            peri = cv2.arcLength(i,True)
-            approx = cv2.approxPolyDP(i,0.02*peri,True)
-            if area > max_area and len(approx)==4:
-                    biggest = approx
-                    max_area = area
-                    #print max_area
-                    if max_area>5000:
-                            cv2.drawContours(img,[approx],0,(0,0,255),2)
-                    warped = four_point_transform(img, approx.reshape(4, 2))
-                    warped_eq = resize_and_threshold_warped(warped)
-
-    return warped
+#def duzlestir(img):
+#    while(True):
+#        im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#
+#        biggest = None
+#        max_area = 0
+#        for i in contours:
+#                area = cv2.contourArea(i)
+#                peri = cv2.arcLength(i,True)
+#                approx = cv2.approxPolyDP(i,0.02*peri,True)
+#                if area > max_area and len(approx)==4:
+#                        biggest = approx
+#                        max_area = area
+#                        #print max_area
+#                        #if max_area>5000:
+#                                #cv2.drawContours(img,[approx],0,(0,0,255),2)
+#                        warped = four_point_transform(img, approx.reshape(4, 2))
+#                        warped_eq = resize_and_threshold_warped(warped)
+#        if max_area>100000:
+#        	cv2.imwrite('square.jpg', img)
+#            cv2.imwrite("Corrected.jpg", warped)
+	#	    break;
+    #    img = take_image()
+    #return warped
 #---------------------------------------------------------------------------------------------------takeimage
 def take_image():
-    cap = cv2.VideoCapture(0)
-
-    if(cap.isOpened()):
-        time.sleep(2)
-        ret,img = cap.read()
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray,(5,5),0)
-        thresh = cv2.adaptiveThreshold(gray,255,1,1,11,2)
-    #img = cv2.imread('/home/niyazi/Desktop/takedeneme.jpeg',1)
-    return thresh
+        cap = cv2.VideoCapture(1)
+        while(cap.isOpened()):
+            ret,img = cap.read()
+            gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            #gray = cv2.GaussianBlur(gray,(5,5),0)
+    	    thresh = cv2.adaptiveThreshold(gray,255,1,1,11,2)
+            gray = cv2.bilateralFilter(gray, 11, 17, 17)
+            #thresh = cv2.Canny(gray, 30, 200)
+            im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            biggest = None
+            max_area = 0
+            for i in contours:
+               area = cv2.contourArea(i)
+               peri = cv2.arcLength(i,True)
+               approx = cv2.approxPolyDP(i,0.02*peri,True)
+               if area > max_area and len(approx)==4:
+                   biggest = approx
+                   max_area = area
+                   warped = four_point_transform(img, approx.reshape(4, 2))
+                   warped_eq = resize_and_threshold_warped(warped)
+                   cv2.imshow("Corrected Perspective", warped)
+            if max_area>100000:
+                print ("ok")
+                break
+        #img = cv2.imread('/home/niyazi/Desktop/takedeneme.jpeg',1)
+        return warped
 #---------------------------------------------------------------------------------------------------arrayecevir
 def arrayecevir(img,harfler):
     durumArray = np.zeros(64).reshape(8,8) #row,column
@@ -537,11 +554,11 @@ def arrayecevir(img,harfler):
         for i in range(0,8):
             dummy = str(harfler[j]+ str(8-i))
             durumArray[i,j] = np.average(vars()[dummy])/255
-    durumArrayAverage = np.average(durumArray)
+    #durumArrayAverage = np.average(durumArray)
     for j in range(0,8):
         for i in range(0,8):
 
-            if(durumArray[i,j]>durumArrayAverage): #0.28
+            if(durumArray[i,j]>0.1): #0.28
                 durumArray[i,j] = 1
             else:
                 durumArray[i,j] = 0
@@ -561,8 +578,8 @@ def detect_movement(a,b,harfler,numaralar):
                     #print i,j
                     #print "buraya geldi " + harf[j], str(numara[i])
                     buraya = harfler[j] + str(numaralar[i])
-    #return buradan+buraya
-    return "e2e4"
+    return buradan+buraya
+    #return "e2e4"
 #---------------------------------------------------------------------------------------------------detect_movement3lu
 def detect_movement2(a,b,c,harfler,numaralar):
     #buradan2 = None ; buraya2 = None
@@ -570,7 +587,7 @@ def detect_movement2(a,b,c,harfler,numaralar):
         for j in range(8):
             if(b[i,j]!=c[i,j]):
                 if(a[i,j] == 1 and b[i,j] == 1 and c[i,j] == 0): #ilk durum 1 ken son durum 0 ise o noktadan ayrilmistir
-                    buradan2 = harfler[j] + str(numaralar[i])
+                    buradan2 = harfler[jh] + str(numaralar[i])
                         #print i,j
                         #print "buradan ayrildi " + harf[j], str(numara[i])
 
@@ -581,9 +598,9 @@ def detect_movement2(a,b,c,harfler,numaralar):
                         #print "buraya geldi " + harf[j], str(numara[i])
                         #print buraya
     #buraya2 = "niyazi"; buradan2 = "utku"
-    #return buradan2+buraya2
-    return "e4d5"
-
+    return buradan2+buraya2
+    #return "e4d5"
+#--------------------------------------------------------------------------------------------------button info
 def buttonInfo():
     ser.write('isPressed')
     arduinoData = ser.readline()
@@ -594,34 +611,43 @@ def buttonInfo():
     if(arduinoData.rstrip('\r\n') == "no"):
 	data = "no";
     return data
-
+#-------------------------------------------------------------------------------------------------hamle yap
 def hamle_yap():
     print("basladi")
     thresh = take_image()
-    drmArray = arrayecevir(thresh,harf)
+    edged = cv2.Canny(thresh,5,200)
+    cv2.imwrite("corrr2.jpg",edged)
+    drmArray = arrayecevir(edged,harf)#duzlestirme islemi yapmayi unutma
+    print(drmArray)
     while True:
         info = buttonInfo()
         if(info == "get"):
             break
         if(info == "finish"):
             break
+    print(info)
     if(info == "finish"):     # burdan sonra iki defa foto çekiyor onu hallet
         thresh2 = take_image()
-        drmArray2 = arrayecevir(thresh2,harf)
+        edged2 = cv2.Canny(thresh2,5,200)
+        drmArray2 = arrayecevir(edged2,harf)
+        print(drmArray2)
         hamle = detect_movement(drmArray,drmArray2,harf,numara)
     elif(info == "get"):
         thresh3 = take_image()
-        drmArray3 = arrayecevir(thresh3,harf)
+        edged3 = cv2.Canny(thresh3,5,200)
+        drmArray3 = arrayecevir(edged3,harf)
         while True:
             info2 = buttonInfo()
             if(info2== "finish"):
                 break
         if(info2 == "finish"):
             thresh4 = take_image()
-            drmArray4 = arrayecevir(thresh4,harf)
+            edged4 = cv2.Canny(thresh4,5,200)
+            drmArray4 = arrayecevir(edged4,harf)
             hamle = detect_movement2(drmArray,drmArray3,drmArray4,harf,numara)
     else:
         print("error")
+    print (hamle)
     return hamle
 def main():
     pos = Position(initial, 0, (True,True), (True,True), 0, 0)
