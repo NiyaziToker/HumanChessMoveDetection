@@ -20,7 +20,7 @@ Block Diagram:
  	Take Image 
 	  	|
   		v 
- 		Grayscale&Theresholding
+ 	Grayscale&Theresholding
   		|
   		v 
  	Edge Detection
