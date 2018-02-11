@@ -20,7 +20,7 @@ Block Diagram:
  	Take Image 
 	  	|
   		v 
- Grayscale&Theresholding
+ 		Grayscale&Theresholding
   		|
   		v 
  	Edge Detection
@@ -29,10 +29,10 @@ Block Diagram:
  	Board Detection 
   		|
   		v 
- Perspective Transformation
+ 	Perspective Transformation
   		|
   		v 
- Chess Piece Detection
+ 	Chess Piece Detection
   		|
   		v 
   	Chess Array
