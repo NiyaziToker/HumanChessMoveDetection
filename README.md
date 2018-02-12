@@ -1,6 +1,6 @@
 # graduateproject
 
-Description:
+## Description:
 
 Image processing is used for detecting human chess move. Python with
 OpenCV (Open Source Computer Vision Library) interface is a good option to make it easier.
@@ -14,7 +14,7 @@ whether there is a piece or not. If there is a piece it takes 1.Otherwise, it ta
 To detect a chess move, the element that turns from 0 to 1 or from 1 to 0.
 
 
-Block Diagram:
+## Block Diagram:
 
  	Take Image 
 	  	|
